@@ -110,6 +110,10 @@ function AdminDashboard() {
     );
   }
 
+  return <AdminDashboardInner />;
+}
+
+function AdminDashboardInner() {
   const [predictions, setPredictions] = useState<Prediction[]>(seedPredictions);
   const [posts, setPosts] = useState<NewsPost[]>(
     initialNews.map((n) => ({ id: n.id, title: n.title, category: n.category, excerpt: n.excerpt, time: n.time })),
