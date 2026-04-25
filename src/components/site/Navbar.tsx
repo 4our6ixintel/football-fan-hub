@@ -1,7 +1,8 @@
-import { Link } from "@tanstack/react-router";
-import { Menu, X, Trophy, ShieldAlert } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { Menu, X, Trophy, ShieldAlert, LogOut } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 const links = [
   { to: "/", label: "Home" },
@@ -15,6 +16,12 @@ const links = [
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
+  const { user, isAdmin, signOut } = useAuth();
+  const navigate = useNavigate();
+  const handleSignOut = async () => {
+    await signOut();
+    void navigate({ to: "/" });
+  };
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
@@ -38,12 +45,22 @@ export function Navbar() {
           ))}
         </nav>
         <div className="hidden lg:flex items-center gap-2">
-          <Link to="/admin" className="text-muted-foreground hover:text-foreground p-2 rounded-md hover:bg-surface" aria-label="Admin">
-            <ShieldAlert className="h-4 w-4" />
-          </Link>
-          <Button variant="ghost" size="sm">Sign In</Button>
-          <Button size="sm" className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow">
-            Join VIP
+          {isAdmin && (
+            <Link to="/admin" className="text-muted-foreground hover:text-foreground p-2 rounded-md hover:bg-surface" aria-label="Admin">
+              <ShieldAlert className="h-4 w-4" />
+            </Link>
+          )}
+          {user ? (
+            <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <LogOut className="h-4 w-4 mr-1" /> Sign Out
+            </Button>
+          ) : (
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/auth">Sign In</Link>
+            </Button>
+          )}
+          <Button asChild size="sm" className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow">
+            <Link to="/vip">Join VIP</Link>
           </Button>
         </div>
         <button onClick={() => setOpen(!open)} className="lg:hidden p-2 rounded-md hover:bg-surface" aria-label="Menu">
@@ -62,8 +79,16 @@ export function Navbar() {
               </Link>
             ))}
             <div className="flex gap-2 pt-3">
-              <Button variant="outline" className="flex-1">Sign In</Button>
-              <Button className="flex-1 bg-gradient-primary text-primary-foreground">Join VIP</Button>
+              {user ? (
+                <Button variant="outline" className="flex-1" onClick={handleSignOut}>Sign Out</Button>
+              ) : (
+                <Button asChild variant="outline" className="flex-1">
+                  <Link to="/auth" onClick={() => setOpen(false)}>Sign In</Link>
+                </Button>
+              )}
+              <Button asChild className="flex-1 bg-gradient-primary text-primary-foreground">
+                <Link to="/vip" onClick={() => setOpen(false)}>Join VIP</Link>
+              </Button>
             </div>
           </nav>
         </div>

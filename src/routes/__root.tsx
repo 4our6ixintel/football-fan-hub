@@ -3,6 +3,8 @@ import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/r
 import appCss from "../styles.css?url";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
+import { AuthProvider } from "@/hooks/useAuth";
+import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -72,10 +74,13 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <main className="flex-1"><Outlet /></main>
-      <Footer />
-    </div>
+    <AuthProvider>
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-1"><Outlet /></main>
+        <Footer />
+        <Toaster />
+      </div>
+    </AuthProvider>
   );
 }
