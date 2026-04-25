@@ -15,6 +15,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PredictionsRouteImport } from './routes/predictions'
 import { Route as OddsRouteImport } from './routes/odds'
+import { Route as NewsRouteImport } from './routes/news'
 import { Route as FixturesRouteImport } from './routes/fixtures'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as BlogRouteImport } from './routes/blog'
@@ -54,6 +55,11 @@ const PredictionsRoute = PredictionsRouteImport.update({
 const OddsRoute = OddsRouteImport.update({
   id: '/odds',
   path: '/odds',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewsRoute = NewsRouteImport.update({
+  id: '/news',
+  path: '/news',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FixturesRoute = FixturesRouteImport.update({
@@ -115,6 +121,7 @@ export interface FileRoutesByFullPath {
   '/blog': typeof BlogRoute
   '/contact': typeof ContactRoute
   '/fixtures': typeof FixturesRoute
+  '/news': typeof NewsRoute
   '/odds': typeof OddsRouteWithChildren
   '/predictions': typeof PredictionsRoute
   '/privacy': typeof PrivacyRoute
@@ -133,6 +140,7 @@ export interface FileRoutesByTo {
   '/blog': typeof BlogRoute
   '/contact': typeof ContactRoute
   '/fixtures': typeof FixturesRoute
+  '/news': typeof NewsRoute
   '/odds': typeof OddsRouteWithChildren
   '/predictions': typeof PredictionsRoute
   '/privacy': typeof PrivacyRoute
@@ -152,6 +160,7 @@ export interface FileRoutesById {
   '/blog': typeof BlogRoute
   '/contact': typeof ContactRoute
   '/fixtures': typeof FixturesRoute
+  '/news': typeof NewsRoute
   '/odds': typeof OddsRouteWithChildren
   '/predictions': typeof PredictionsRoute
   '/privacy': typeof PrivacyRoute
@@ -172,6 +181,7 @@ export interface FileRouteTypes {
     | '/blog'
     | '/contact'
     | '/fixtures'
+    | '/news'
     | '/odds'
     | '/predictions'
     | '/privacy'
@@ -190,6 +200,7 @@ export interface FileRouteTypes {
     | '/blog'
     | '/contact'
     | '/fixtures'
+    | '/news'
     | '/odds'
     | '/predictions'
     | '/privacy'
@@ -208,6 +219,7 @@ export interface FileRouteTypes {
     | '/blog'
     | '/contact'
     | '/fixtures'
+    | '/news'
     | '/odds'
     | '/predictions'
     | '/privacy'
@@ -227,6 +239,7 @@ export interface RootRouteChildren {
   BlogRoute: typeof BlogRoute
   ContactRoute: typeof ContactRoute
   FixturesRoute: typeof FixturesRoute
+  NewsRoute: typeof NewsRoute
   OddsRoute: typeof OddsRouteWithChildren
   PredictionsRoute: typeof PredictionsRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -277,6 +290,13 @@ declare module '@tanstack/react-router' {
       path: '/odds'
       fullPath: '/odds'
       preLoaderRoute: typeof OddsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/news': {
+      id: '/news'
+      path: '/news'
+      fullPath: '/news'
+      preLoaderRoute: typeof NewsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/fixtures': {
@@ -374,6 +394,7 @@ const rootRouteChildren: RootRouteChildren = {
   BlogRoute: BlogRoute,
   ContactRoute: ContactRoute,
   FixturesRoute: FixturesRoute,
+  NewsRoute: NewsRoute,
   OddsRoute: OddsRouteWithChildren,
   PredictionsRoute: PredictionsRoute,
   PrivacyRoute: PrivacyRoute,
