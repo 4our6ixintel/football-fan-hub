@@ -1,7 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Crown, Check, Smartphone, CreditCard } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Crown, Check, Smartphone, CreditCard, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/vip")({
   head: () => ({
@@ -29,8 +31,39 @@ const faqs = [
 ];
 
 function VIP() {
+  const { user, isSubscriber, loading } = useAuth();
+  const navigate = useNavigate();
+
+  const handleChoose = (plan: string) => {
+    if (!user) {
+      toast.info("Sign in to subscribe");
+      void navigate({ to: "/auth" });
+      return;
+    }
+    toast.success(`${plan} plan selected — checkout coming soon (demo)`);
+  };
+
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
+      {!loading && user && isSubscriber && (
+        <div className="mb-8 rounded-xl border border-primary/40 bg-primary/10 p-4 flex items-center gap-3">
+          <Crown className="h-5 w-5 text-primary" />
+          <div className="flex-1">
+            <p className="font-bold text-sm">You're a VIP member</p>
+            <p className="text-xs text-muted-foreground">Access your premium predictions and accumulators.</p>
+          </div>
+        </div>
+      )}
+      {!loading && !user && (
+        <div className="mb-8 rounded-xl border border-border/60 bg-gradient-card p-4 flex items-center gap-3">
+          <Lock className="h-5 w-5 text-muted-foreground" />
+          <div className="flex-1">
+            <p className="font-bold text-sm">Sign in to subscribe</p>
+            <p className="text-xs text-muted-foreground">Create a free account to manage your VIP plan.</p>
+          </div>
+          <Button asChild size="sm" variant="outline"><Link to="/auth">Sign in</Link></Button>
+        </div>
+      )}
       <div className="text-center max-w-2xl mx-auto">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-vip/15 border border-vip/30 text-vip text-xs font-bold mb-4">
           <Crown className="h-3.5 w-3.5" /> VIP MEMBERSHIP
