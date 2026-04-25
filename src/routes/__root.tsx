@@ -31,14 +31,18 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "simplebethub" },
+      { name: "description", content: "Football Fan Hub is a legal platform offering match predictions, odds, news, and VIP tips." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "simplebethub" },
+      { property: "og:description", content: "Football Fan Hub is a legal platform offering match predictions, odds, news, and VIP tips." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "simplebethub" },
+      { name: "twitter:description", content: "Football Fan Hub is a legal platform offering match predictions, odds, news, and VIP tips." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1fe2cc2e-2b41-49ca-bd82-14c895038de6/id-preview-3c415bbb--67563677-ba3f-479c-a4b5-c52664f8cdaf.lovable.app-1777156435539.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1fe2cc2e-2b41-49ca-bd82-14c895038de6/id-preview-3c415bbb--67563677-ba3f-479c-a4b5-c52664f8cdaf.lovable.app-1777156435539.png" },
     ],
     links: [
       {
