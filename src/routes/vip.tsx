@@ -89,7 +89,7 @@ function VIP() {
                 </li>
               ))}
             </ul>
-            <Button className={`mt-7 w-full ${p.popular ? "bg-gradient-primary text-primary-foreground" : "bg-surface-elevated"}`}>
+            <Button onClick={() => handleChoose(p.name)} className={`mt-7 w-full ${p.popular ? "bg-gradient-primary text-primary-foreground" : "bg-surface-elevated"}`}>
               Choose {p.name}
             </Button>
           </div>
