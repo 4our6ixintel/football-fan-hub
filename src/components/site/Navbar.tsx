@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Menu, X, Trophy } from "lucide-react";
+import { Menu, X, Trophy, ShieldAlert } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -38,6 +38,9 @@ export function Navbar() {
           ))}
         </nav>
         <div className="hidden lg:flex items-center gap-2">
+          <Link to="/admin" className="text-muted-foreground hover:text-foreground p-2 rounded-md hover:bg-surface" aria-label="Admin">
+            <ShieldAlert className="h-4 w-4" />
+          </Link>
           <Button variant="ghost" size="sm">Sign In</Button>
           <Button size="sm" className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow">
             Join VIP
