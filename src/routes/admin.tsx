@@ -1,5 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Trash2, Plus, ShieldAlert, TrendingUp, Users, Newspaper, CreditCard } from "lucide-react";
+import { Trash2, Plus, ShieldAlert, TrendingUp, Users, Newspaper, CreditCard, Lock } from "lucide-react";
 import { featuredMatches, news as initialNews } from "@/lib/data";
 
 export const Route = createFileRoute("/admin")({
@@ -83,6 +84,32 @@ const seedPayments: Payment[] = [
 ];
 
 function AdminDashboard() {
+  const { user, isAdmin, loading } = useAuth();
+
+  if (loading) {
+    return <div className="mx-auto max-w-3xl px-4 py-20 text-center text-muted-foreground">Loading…</div>;
+  }
+
+  if (!user || !isAdmin) {
+    return (
+      <div className="mx-auto max-w-md px-4 sm:px-6 py-20 text-center">
+        <div className="mx-auto h-14 w-14 rounded-xl bg-surface grid place-items-center mb-4">
+          <Lock className="h-6 w-6 text-muted-foreground" />
+        </div>
+        <h1 className="text-2xl font-extrabold">Admin access required</h1>
+        <p className="text-sm text-muted-foreground mt-2">
+          {user
+            ? "Your account doesn't have admin privileges. Ask an existing admin to grant you the 'admin' role in the user_roles table."
+            : "Sign in with an admin account to access this dashboard."}
+        </p>
+        <div className="mt-6 flex gap-2 justify-center">
+          {!user && <Button asChild className="bg-gradient-primary text-primary-foreground"><Link to="/auth">Sign in</Link></Button>}
+          <Button asChild variant="outline"><Link to="/">Go home</Link></Button>
+        </div>
+      </div>
+    );
+  }
+
   const [predictions, setPredictions] = useState<Prediction[]>(seedPredictions);
   const [posts, setPosts] = useState<NewsPost[]>(
     initialNews.map((n) => ({ id: n.id, title: n.title, category: n.category, excerpt: n.excerpt, time: n.time })),
