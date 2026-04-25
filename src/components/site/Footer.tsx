@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Trophy, Facebook, Twitter, Instagram, Send } from "lucide-react";
+import { Trophy, Send, Share2, MessageCircle, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -16,7 +16,7 @@ export function Footer() {
           </div>
           <p className="text-sm text-muted-foreground">Africa's trusted football predictions, odds and VIP tips platform.</p>
           <div className="flex gap-2 pt-2">
-            {[Facebook, Twitter, Instagram, Send].map((Icon, i) => (
+            {[Globe, Share2, MessageCircle, Send].map((Icon, i) => (
               <a key={i} href="#" className="h-9 w-9 grid place-items-center rounded-md bg-background hover:bg-primary hover:text-primary-foreground transition-smooth">
                 <Icon className="h-4 w-4" />
               </a>
