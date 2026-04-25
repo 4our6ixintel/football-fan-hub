@@ -22,6 +22,9 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OddsTodayRouteImport } from './routes/odds.today'
+import { Route as OddsPremierLeagueRouteImport } from './routes/odds.premier-league'
+import { Route as OddsChampionsLeagueRouteImport } from './routes/odds.champions-league'
 
 const VipRoute = VipRouteImport.update({
   id: '/vip',
@@ -88,6 +91,21 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OddsTodayRoute = OddsTodayRouteImport.update({
+  id: '/today',
+  path: '/today',
+  getParentRoute: () => OddsRoute,
+} as any)
+const OddsPremierLeagueRoute = OddsPremierLeagueRouteImport.update({
+  id: '/premier-league',
+  path: '/premier-league',
+  getParentRoute: () => OddsRoute,
+} as any)
+const OddsChampionsLeagueRoute = OddsChampionsLeagueRouteImport.update({
+  id: '/champions-league',
+  path: '/champions-league',
+  getParentRoute: () => OddsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -97,12 +115,15 @@ export interface FileRoutesByFullPath {
   '/blog': typeof BlogRoute
   '/contact': typeof ContactRoute
   '/fixtures': typeof FixturesRoute
-  '/odds': typeof OddsRoute
+  '/odds': typeof OddsRouteWithChildren
   '/predictions': typeof PredictionsRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/vip': typeof VipRoute
+  '/odds/champions-league': typeof OddsChampionsLeagueRoute
+  '/odds/premier-league': typeof OddsPremierLeagueRoute
+  '/odds/today': typeof OddsTodayRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -112,12 +133,15 @@ export interface FileRoutesByTo {
   '/blog': typeof BlogRoute
   '/contact': typeof ContactRoute
   '/fixtures': typeof FixturesRoute
-  '/odds': typeof OddsRoute
+  '/odds': typeof OddsRouteWithChildren
   '/predictions': typeof PredictionsRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/vip': typeof VipRoute
+  '/odds/champions-league': typeof OddsChampionsLeagueRoute
+  '/odds/premier-league': typeof OddsPremierLeagueRoute
+  '/odds/today': typeof OddsTodayRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -128,12 +152,15 @@ export interface FileRoutesById {
   '/blog': typeof BlogRoute
   '/contact': typeof ContactRoute
   '/fixtures': typeof FixturesRoute
-  '/odds': typeof OddsRoute
+  '/odds': typeof OddsRouteWithChildren
   '/predictions': typeof PredictionsRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/vip': typeof VipRoute
+  '/odds/champions-league': typeof OddsChampionsLeagueRoute
+  '/odds/premier-league': typeof OddsPremierLeagueRoute
+  '/odds/today': typeof OddsTodayRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -151,6 +178,9 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/terms'
     | '/vip'
+    | '/odds/champions-league'
+    | '/odds/premier-league'
+    | '/odds/today'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -166,6 +196,9 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/terms'
     | '/vip'
+    | '/odds/champions-league'
+    | '/odds/premier-league'
+    | '/odds/today'
   id:
     | '__root__'
     | '/'
@@ -181,6 +214,9 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/terms'
     | '/vip'
+    | '/odds/champions-league'
+    | '/odds/premier-league'
+    | '/odds/today'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -191,7 +227,7 @@ export interface RootRouteChildren {
   BlogRoute: typeof BlogRoute
   ContactRoute: typeof ContactRoute
   FixturesRoute: typeof FixturesRoute
-  OddsRoute: typeof OddsRoute
+  OddsRoute: typeof OddsRouteWithChildren
   PredictionsRoute: typeof PredictionsRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -292,8 +328,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/odds/today': {
+      id: '/odds/today'
+      path: '/today'
+      fullPath: '/odds/today'
+      preLoaderRoute: typeof OddsTodayRouteImport
+      parentRoute: typeof OddsRoute
+    }
+    '/odds/premier-league': {
+      id: '/odds/premier-league'
+      path: '/premier-league'
+      fullPath: '/odds/premier-league'
+      preLoaderRoute: typeof OddsPremierLeagueRouteImport
+      parentRoute: typeof OddsRoute
+    }
+    '/odds/champions-league': {
+      id: '/odds/champions-league'
+      path: '/champions-league'
+      fullPath: '/odds/champions-league'
+      preLoaderRoute: typeof OddsChampionsLeagueRouteImport
+      parentRoute: typeof OddsRoute
+    }
   }
 }
+
+interface OddsRouteChildren {
+  OddsChampionsLeagueRoute: typeof OddsChampionsLeagueRoute
+  OddsPremierLeagueRoute: typeof OddsPremierLeagueRoute
+  OddsTodayRoute: typeof OddsTodayRoute
+}
+
+const OddsRouteChildren: OddsRouteChildren = {
+  OddsChampionsLeagueRoute: OddsChampionsLeagueRoute,
+  OddsPremierLeagueRoute: OddsPremierLeagueRoute,
+  OddsTodayRoute: OddsTodayRoute,
+}
+
+const OddsRouteWithChildren = OddsRoute._addFileChildren(OddsRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -303,7 +374,7 @@ const rootRouteChildren: RootRouteChildren = {
   BlogRoute: BlogRoute,
   ContactRoute: ContactRoute,
   FixturesRoute: FixturesRoute,
-  OddsRoute: OddsRoute,
+  OddsRoute: OddsRouteWithChildren,
   PredictionsRoute: PredictionsRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
