@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Newspaper, Trophy, Search, RefreshCw, ExternalLink } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getNews, type NewsArticle } from "@/utils/sports.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/blog")({
   head: () => ({
@@ -40,6 +41,13 @@ function Blog() {
   const [query, setQuery] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [editorial, setEditorial] = useState<Array<{ id: string; title: string; category: string; excerpt: string; created_at: string }>>([]);
+
+  useEffect(() => {
+    void supabase.from("news_posts").select("*").order("created_at", { ascending: false }).limit(6).then(({ data }) => {
+      if (data) setEditorial(data);
+    });
+  }, []);
 
   const runSearch = useCallback(async (q: string) => {
     setBusy(true);
@@ -87,6 +95,25 @@ function Blog() {
           Showing results for <span className="text-foreground font-medium">"{query}"</span> ·{" "}
           <button type="button" className="text-primary hover:underline" onClick={() => { setSearchInput(""); void runSearch(""); }}>clear</button>
         </p>
+      )}
+
+      {editorial.length > 0 && !query && (
+        <section className="mt-8">
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="text-xl font-bold">Editor's Desk</h2>
+            <Badge variant="secondary" className="bg-primary/15 text-primary border-primary/30">From our team</Badge>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {editorial.map((p) => (
+              <article key={p.id} className="rounded-xl bg-gradient-card border border-border/60 p-5">
+                <Badge variant="outline" className="mb-2">{p.category}</Badge>
+                <h3 className="font-bold leading-snug">{p.title}</h3>
+                <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{p.excerpt}</p>
+                <div className="text-xs text-muted-foreground mt-3">{timeAgo(p.created_at)}</div>
+              </article>
+            ))}
+          </div>
+        </section>
       )}
 
       {articles.length === 0 ? (
