@@ -68,6 +68,9 @@ function VIP() {
             <p className="font-bold text-sm">You're a VIP member</p>
             <p className="text-xs text-muted-foreground">Access your premium predictions and accumulators.</p>
           </div>
+          <Button asChild size="sm" className="bg-gradient-primary text-primary-foreground">
+            <Link to="/vip/dashboard">Open Dashboard</Link>
+          </Button>
         </div>
       )}
       {!loading && !user && (

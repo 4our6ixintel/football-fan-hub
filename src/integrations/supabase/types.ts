@@ -131,6 +131,90 @@ export type Database = {
         }
         Relationships: []
       }
+      vip_accumulators: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          legs: Json
+          scheduled_for: string
+          stake_units: number
+          status: string
+          title: string
+          total_odds: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          legs?: Json
+          scheduled_for?: string
+          stake_units?: number
+          status?: string
+          title: string
+          total_odds?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          legs?: Json
+          scheduled_for?: string
+          stake_units?: number
+          status?: string
+          title?: string
+          total_odds?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      vip_picks: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          kickoff: string
+          league: string
+          match: string
+          notes: string | null
+          odds: number
+          pick: string
+          stake_units: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kickoff?: string
+          league: string
+          match: string
+          notes?: string | null
+          odds?: number
+          pick: string
+          stake_units?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kickoff?: string
+          league?: string
+          match?: string
+          notes?: string | null
+          odds?: number
+          pick?: string
+          stake_units?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
