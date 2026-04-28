@@ -1,7 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { MatchCard } from "@/components/site/MatchCard";
 import { featuredMatches } from "@/lib/data";
+import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
 import { Sparkles, Target, Layers } from "lucide-react";
 
 export const Route = createFileRoute("/predictions")({
@@ -17,9 +20,38 @@ export const Route = createFileRoute("/predictions")({
 });
 
 function Predictions() {
+  const [dbPicks, setDbPicks] = useState<Array<{ id: string; league: string; match: string; pick: string; confidence: number; kickoff: string }>>([]);
+
+  useEffect(() => {
+    void supabase.from("predictions").select("*").order("created_at", { ascending: false }).limit(20).then(({ data }) => {
+      if (data) setDbPicks(data);
+    });
+  }, []);
+
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
       <PageHeader icon={<Sparkles className="h-6 w-6 text-primary" />} title="Daily Predictions" subtitle="Updated every morning. Confidence ratings powered by our model." />
+
+      {dbPicks.length > 0 && (
+        <section className="mt-8">
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="text-xl font-bold">Today's Editor Picks</h2>
+            <Badge variant="secondary" className="bg-primary/15 text-primary border-primary/30">Fresh</Badge>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+            {dbPicks.map((p) => (
+              <div key={p.id} className="rounded-xl bg-gradient-card border border-border/60 p-4">
+                <div className="text-xs text-muted-foreground">{p.league} • {p.kickoff}</div>
+                <div className="font-bold mt-1">{p.match}</div>
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="text-sm text-primary font-semibold">{p.pick}</span>
+                  <Badge variant="secondary">{p.confidence}%</Badge>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <Tabs defaultValue="all" className="mt-8">
         <TabsList className="bg-surface flex flex-wrap h-auto">
