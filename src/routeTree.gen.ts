@@ -23,6 +23,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as VipDashboardRouteImport } from './routes/vip.dashboard'
 import { Route as OddsTodayRouteImport } from './routes/odds.today'
 import { Route as OddsPremierLeagueRouteImport } from './routes/odds.premier-league'
 import { Route as OddsChampionsLeagueRouteImport } from './routes/odds.champions-league'
@@ -97,6 +98,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VipDashboardRoute = VipDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => VipRoute,
+} as any)
 const OddsTodayRoute = OddsTodayRouteImport.update({
   id: '/today',
   path: '/today',
@@ -127,10 +133,11 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
-  '/vip': typeof VipRoute
+  '/vip': typeof VipRouteWithChildren
   '/odds/champions-league': typeof OddsChampionsLeagueRoute
   '/odds/premier-league': typeof OddsPremierLeagueRoute
   '/odds/today': typeof OddsTodayRoute
+  '/vip/dashboard': typeof VipDashboardRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -146,10 +153,11 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
-  '/vip': typeof VipRoute
+  '/vip': typeof VipRouteWithChildren
   '/odds/champions-league': typeof OddsChampionsLeagueRoute
   '/odds/premier-league': typeof OddsPremierLeagueRoute
   '/odds/today': typeof OddsTodayRoute
+  '/vip/dashboard': typeof VipDashboardRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -166,10 +174,11 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
-  '/vip': typeof VipRoute
+  '/vip': typeof VipRouteWithChildren
   '/odds/champions-league': typeof OddsChampionsLeagueRoute
   '/odds/premier-league': typeof OddsPremierLeagueRoute
   '/odds/today': typeof OddsTodayRoute
+  '/vip/dashboard': typeof VipDashboardRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -191,6 +200,7 @@ export interface FileRouteTypes {
     | '/odds/champions-league'
     | '/odds/premier-league'
     | '/odds/today'
+    | '/vip/dashboard'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -210,6 +220,7 @@ export interface FileRouteTypes {
     | '/odds/champions-league'
     | '/odds/premier-league'
     | '/odds/today'
+    | '/vip/dashboard'
   id:
     | '__root__'
     | '/'
@@ -229,6 +240,7 @@ export interface FileRouteTypes {
     | '/odds/champions-league'
     | '/odds/premier-league'
     | '/odds/today'
+    | '/vip/dashboard'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -245,7 +257,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
-  VipRoute: typeof VipRoute
+  VipRoute: typeof VipRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -348,6 +360,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/vip/dashboard': {
+      id: '/vip/dashboard'
+      path: '/dashboard'
+      fullPath: '/vip/dashboard'
+      preLoaderRoute: typeof VipDashboardRouteImport
+      parentRoute: typeof VipRoute
+    }
     '/odds/today': {
       id: '/odds/today'
       path: '/today'
@@ -386,6 +405,16 @@ const OddsRouteChildren: OddsRouteChildren = {
 
 const OddsRouteWithChildren = OddsRoute._addFileChildren(OddsRouteChildren)
 
+interface VipRouteChildren {
+  VipDashboardRoute: typeof VipDashboardRoute
+}
+
+const VipRouteChildren: VipRouteChildren = {
+  VipDashboardRoute: VipDashboardRoute,
+}
+
+const VipRouteWithChildren = VipRoute._addFileChildren(VipRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
@@ -400,7 +429,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
-  VipRoute: VipRoute,
+  VipRoute: VipRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
