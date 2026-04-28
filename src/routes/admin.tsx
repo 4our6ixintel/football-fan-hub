@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +13,6 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Trash2, Plus, ShieldAlert, TrendingUp, Users, Newspaper, CreditCard, Lock } from "lucide-react";
-import { featuredMatches, news as initialNews } from "@/lib/data";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -60,15 +60,6 @@ type Payment = {
   date: string;
 };
 
-const seedPredictions: Prediction[] = featuredMatches.map((m) => ({
-  id: m.id,
-  league: m.league,
-  match: `${m.home} vs ${m.away}`,
-  pick: m.prediction,
-  confidence: m.confidence,
-  kickoff: m.kickoff,
-}));
-
 const seedUsers: AdminUser[] = [
   { id: "u1", email: "kato@example.com", username: "kato_ug", plan: "Monthly", joined: "2025-03-12" },
   { id: "u2", email: "amina@example.com", username: "amina7", plan: "Weekly", joined: "2025-04-02" },
@@ -114,10 +105,9 @@ function AdminDashboard() {
 }
 
 function AdminDashboardInner() {
-  const [predictions, setPredictions] = useState<Prediction[]>(seedPredictions);
-  const [posts, setPosts] = useState<NewsPost[]>(
-    initialNews.map((n) => ({ id: n.id, title: n.title, category: n.category, excerpt: n.excerpt, time: n.time })),
-  );
+  const { user } = useAuth();
+  const [predictions, setPredictions] = useState<Prediction[]>([]);
+  const [posts, setPosts] = useState<NewsPost[]>([]);
   const [users, setUsers] = useState<AdminUser[]>(seedUsers);
   const [payments] = useState<Payment[]>(seedPayments);
 
@@ -133,6 +123,29 @@ function AdminDashboardInner() {
   const [nCategory, setNCategory] = useState("");
   const [nExcerpt, setNExcerpt] = useState("");
 
+  useEffect(() => {
+    void loadAll();
+  }, []);
+
+  const loadAll = async () => {
+    const [predRes, newsRes] = await Promise.all([
+      supabase.from("predictions").select("*").order("created_at", { ascending: false }),
+      supabase.from("news_posts").select("*").order("created_at", { ascending: false }),
+    ]);
+    if (predRes.data) {
+      setPredictions(predRes.data.map((p) => ({
+        id: p.id, league: p.league, match: p.match, pick: p.pick,
+        confidence: p.confidence, kickoff: p.kickoff,
+      })));
+    }
+    if (newsRes.data) {
+      setPosts(newsRes.data.map((n) => ({
+        id: n.id, title: n.title, category: n.category, excerpt: n.excerpt,
+        time: new Date(n.created_at).toLocaleDateString(),
+      })));
+    }
+  };
+
   const stats = [
     { label: "Total Users", value: users.length, icon: Users },
     { label: "Active Predictions", value: predictions.length, icon: TrendingUp },
@@ -147,40 +160,49 @@ function AdminDashboardInner() {
     },
   ];
 
-  const addPrediction = (e: React.FormEvent) => {
+  const addPrediction = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!pLeague || !pMatch || !pPick || !pKickoff) {
       toast.error("Fill all prediction fields");
       return;
     }
-    setPredictions((prev) => [
-      { id: crypto.randomUUID(), league: pLeague, match: pMatch, pick: pPick, confidence: Number(pConfidence) || 0, kickoff: pKickoff },
-      ...prev,
-    ]);
+    const { error, data } = await supabase.from("predictions").insert({
+      league: pLeague, match: pMatch, pick: pPick,
+      confidence: Number(pConfidence) || 0, kickoff: pKickoff,
+      created_by: user?.id ?? null,
+    }).select().single();
+    if (error) { toast.error(error.message); return; }
+    setPredictions((prev) => [{ id: data.id, league: data.league, match: data.match, pick: data.pick, confidence: data.confidence, kickoff: data.kickoff }, ...prev]);
     setPLeague(""); setPMatch(""); setPPick(""); setPConfidence("80"); setPKickoff("");
-    toast.success("Prediction added");
+    toast.success("Prediction published");
   };
 
-  const deletePrediction = (id: string) => {
+  const deletePrediction = async (id: string) => {
+    const { error } = await supabase.from("predictions").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
     setPredictions((prev) => prev.filter((p) => p.id !== id));
     toast.success("Prediction removed");
   };
 
-  const addPost = (e: React.FormEvent) => {
+  const addPost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nTitle || !nCategory || !nExcerpt) {
       toast.error("Fill all news fields");
       return;
     }
-    setPosts((prev) => [
-      { id: crypto.randomUUID(), title: nTitle, category: nCategory, excerpt: nExcerpt, time: "Just now" },
-      ...prev,
-    ]);
+    const { error, data } = await supabase.from("news_posts").insert({
+      title: nTitle, category: nCategory, excerpt: nExcerpt,
+      created_by: user?.id ?? null,
+    }).select().single();
+    if (error) { toast.error(error.message); return; }
+    setPosts((prev) => [{ id: data.id, title: data.title, category: data.category, excerpt: data.excerpt, time: "Just now" }, ...prev]);
     setNTitle(""); setNCategory(""); setNExcerpt("");
     toast.success("News post published");
   };
 
-  const deletePost = (id: string) => {
+  const deletePost = async (id: string) => {
+    const { error } = await supabase.from("news_posts").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
     setPosts((prev) => prev.filter((p) => p.id !== id));
     toast.success("Post removed");
   };
@@ -200,9 +222,9 @@ function AdminDashboardInner() {
             </span>
             Admin Dashboard
           </h1>
-          <p className="text-sm text-muted-foreground mt-2">Demo mode — changes are not persisted. Connect Lovable Cloud to save data.</p>
+          <p className="text-sm text-muted-foreground mt-2">Predictions and news are saved to your database. Users and payments are demo only.</p>
         </div>
-        <Badge variant="secondary" className="bg-warning/10 text-warning border-warning/30">Demo</Badge>
+        <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/30">Live DB</Badge>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
