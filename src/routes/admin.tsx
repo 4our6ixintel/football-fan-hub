@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Trash2, Plus, ShieldAlert, TrendingUp, Users, Newspaper, CreditCard, Lock } from "lucide-react";
+import { Trash2, Plus, ShieldAlert, TrendingUp, Users, Newspaper, CreditCard, Lock, Crown, X } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -58,6 +58,28 @@ type Payment = {
   method: "MTN MoMo" | "Airtel Money" | "Card";
   status: "Successful" | "Pending" | "Failed";
   date: string;
+};
+
+type VipPickRow = {
+  id: string;
+  match: string;
+  league: string;
+  pick: string;
+  odds: number;
+  stake_units: number;
+  kickoff: string;
+  status: "pending" | "won" | "lost" | "void";
+};
+
+type VipAccaLeg = { match: string; pick: string; odds: number };
+type VipAccaRow = {
+  id: string;
+  title: string;
+  total_odds: number;
+  stake_units: number;
+  status: "pending" | "won" | "lost" | "void";
+  legs: VipAccaLeg[];
+  scheduled_for: string;
 };
 
 const seedUsers: AdminUser[] = [
@@ -110,6 +132,8 @@ function AdminDashboardInner() {
   const [posts, setPosts] = useState<NewsPost[]>([]);
   const [users, setUsers] = useState<AdminUser[]>(seedUsers);
   const [payments] = useState<Payment[]>(seedPayments);
+  const [vipPicks, setVipPicks] = useState<VipPickRow[]>([]);
+  const [vipAccas, setVipAccas] = useState<VipAccaRow[]>([]);
 
   // Prediction form
   const [pLeague, setPLeague] = useState("");
@@ -123,14 +147,30 @@ function AdminDashboardInner() {
   const [nCategory, setNCategory] = useState("");
   const [nExcerpt, setNExcerpt] = useState("");
 
+  // VIP pick form
+  const [vMatch, setVMatch] = useState("");
+  const [vLeague, setVLeague] = useState("");
+  const [vPick, setVPick] = useState("");
+  const [vOdds, setVOdds] = useState("1.85");
+  const [vStake, setVStake] = useState("1");
+  const [vKickoff, setVKickoff] = useState("");
+
+  // VIP acca form
+  const [aTitle, setATitle] = useState("");
+  const [aStake, setAStake] = useState("1");
+  const [aWhen, setAWhen] = useState("");
+  const [aLegs, setALegs] = useState<VipAccaLeg[]>([{ match: "", pick: "", odds: 1.5 }]);
+
   useEffect(() => {
     void loadAll();
   }, []);
 
   const loadAll = async () => {
-    const [predRes, newsRes] = await Promise.all([
+    const [predRes, newsRes, vipPicksRes, vipAccasRes] = await Promise.all([
       supabase.from("predictions").select("*").order("created_at", { ascending: false }),
       supabase.from("news_posts").select("*").order("created_at", { ascending: false }),
+      supabase.from("vip_picks").select("*").order("kickoff", { ascending: false }),
+      supabase.from("vip_accumulators").select("*").order("scheduled_for", { ascending: false }),
     ]);
     if (predRes.data) {
       setPredictions(predRes.data.map((p) => ({
@@ -143,6 +183,13 @@ function AdminDashboardInner() {
         id: n.id, title: n.title, category: n.category, excerpt: n.excerpt,
         time: new Date(n.created_at).toLocaleDateString(),
       })));
+    }
+    if (vipPicksRes.data) setVipPicks(vipPicksRes.data as VipPickRow[]);
+    if (vipAccasRes.data) {
+      setVipAccas(vipAccasRes.data.map((a: any) => ({
+        ...a,
+        legs: Array.isArray(a.legs) ? a.legs : [],
+      })) as VipAccaRow[]);
     }
   };
 
@@ -212,6 +259,82 @@ function AdminDashboardInner() {
     toast.success("Plan updated");
   };
 
+  // VIP picks
+  const addVipPick = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!vMatch || !vLeague || !vPick || !vKickoff) {
+      toast.error("Fill all VIP pick fields");
+      return;
+    }
+    const { error, data } = await supabase.from("vip_picks").insert({
+      match: vMatch, league: vLeague, pick: vPick,
+      odds: Number(vOdds) || 1, stake_units: Number(vStake) || 1,
+      kickoff: new Date(vKickoff).toISOString(),
+      created_by: user?.id ?? null,
+    }).select().single();
+    if (error) { toast.error(error.message); return; }
+    setVipPicks((prev) => [data as VipPickRow, ...prev]);
+    setVMatch(""); setVLeague(""); setVPick(""); setVOdds("1.85"); setVStake("1"); setVKickoff("");
+    toast.success("VIP pick published");
+  };
+
+  const setVipPickStatus = async (id: string, status: VipPickRow["status"]) => {
+    const { error } = await supabase.from("vip_picks").update({ status }).eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    setVipPicks((prev) => prev.map((p) => (p.id === id ? { ...p, status } : p)));
+    toast.success("Status updated");
+  };
+
+  const deleteVipPick = async (id: string) => {
+    const { error } = await supabase.from("vip_picks").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    setVipPicks((prev) => prev.filter((p) => p.id !== id));
+    toast.success("VIP pick removed");
+  };
+
+  // VIP accumulators
+  const updateLeg = (i: number, field: keyof VipAccaLeg, val: string) => {
+    setALegs((prev) => prev.map((l, idx) => idx === i ? { ...l, [field]: field === "odds" ? Number(val) || 0 : val } : l));
+  };
+  const addLeg = () => setALegs((prev) => [...prev, { match: "", pick: "", odds: 1.5 }]);
+  const removeLeg = (i: number) => setALegs((prev) => prev.filter((_, idx) => idx !== i));
+
+  const totalAccaOdds = aLegs.reduce((acc, l) => acc * (Number(l.odds) || 1), 1);
+
+  const addVipAcca = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!aTitle || !aWhen || aLegs.some((l) => !l.match || !l.pick || !l.odds)) {
+      toast.error("Fill title, date and all legs");
+      return;
+    }
+    const { error, data } = await supabase.from("vip_accumulators").insert({
+      title: aTitle,
+      total_odds: totalAccaOdds,
+      stake_units: Number(aStake) || 1,
+      legs: aLegs as any,
+      scheduled_for: new Date(aWhen).toISOString(),
+      created_by: user?.id ?? null,
+    }).select().single();
+    if (error) { toast.error(error.message); return; }
+    setVipAccas((prev) => [{ ...(data as any), legs: Array.isArray((data as any).legs) ? (data as any).legs : [] }, ...prev]);
+    setATitle(""); setAStake("1"); setAWhen(""); setALegs([{ match: "", pick: "", odds: 1.5 }]);
+    toast.success("Accumulator published");
+  };
+
+  const setAccaStatus = async (id: string, status: VipAccaRow["status"]) => {
+    const { error } = await supabase.from("vip_accumulators").update({ status }).eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    setVipAccas((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)));
+    toast.success("Status updated");
+  };
+
+  const deleteAcca = async (id: string) => {
+    const { error } = await supabase.from("vip_accumulators").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    setVipAccas((prev) => prev.filter((a) => a.id !== id));
+    toast.success("Accumulator removed");
+  };
+
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
       <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -244,9 +367,10 @@ function AdminDashboardInner() {
       </div>
 
       <Tabs defaultValue="predictions" className="mt-8">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 max-w-2xl">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 max-w-3xl">
           <TabsTrigger value="predictions">Predictions</TabsTrigger>
           <TabsTrigger value="news">News</TabsTrigger>
+          <TabsTrigger value="vip">VIP</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
         </TabsList>
