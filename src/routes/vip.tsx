@@ -1,9 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Crown, Check, Smartphone, CreditCard, Lock } from "lucide-react";
+import { Crown, Check, Smartphone, CreditCard, Lock, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { useState } from "react";
+
+const PAYMENT_NUMBER = "+256 754 466 293";
+const PAYMENT_NUMBER_RAW = "+256754466293";
 
 export const Route = createFileRoute("/vip")({
   head: () => ({
@@ -33,6 +38,7 @@ const faqs = [
 function VIP() {
   const { user, isSubscriber, loading } = useAuth();
   const navigate = useNavigate();
+  const [selectedPlan, setSelectedPlan] = useState<{ name: string; price: number } | null>(null);
 
   const handleChoose = (plan: string) => {
     if (!user) {
@@ -40,7 +46,17 @@ function VIP() {
       void navigate({ to: "/auth" });
       return;
     }
-    toast.success(`${plan} plan selected — checkout coming soon (demo)`);
+    const found = plans.find((p) => p.name === plan);
+    if (found) setSelectedPlan({ name: found.name, price: found.price });
+  };
+
+  const copyNumber = async () => {
+    try {
+      await navigator.clipboard.writeText(PAYMENT_NUMBER_RAW);
+      toast.success("Payment number copied");
+    } catch {
+      toast.error("Could not copy — please copy manually");
+    }
   };
 
   return (
@@ -126,6 +142,39 @@ function VIP() {
       </section>
 
       <p className="text-xs text-muted-foreground text-center mt-10">⚠️ 18+ only. We do not guarantee winnings. Gamble responsibly.</p>
+
+      <Dialog open={!!selectedPlan} onOpenChange={(o) => !o && setSelectedPlan(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Smartphone className="h-5 w-5 text-primary" /> Pay with Mobile Money</DialogTitle>
+            <DialogDescription>
+              Send <span className="font-bold text-foreground">${selectedPlan?.price}</span> for the <span className="font-bold text-foreground">{selectedPlan?.name}</span> plan to the number below, then send a screenshot via WhatsApp to activate your subscription.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-xl border border-primary/40 bg-primary/10 p-5 text-center">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">Send to</p>
+            <p className="text-2xl font-extrabold mt-1">{PAYMENT_NUMBER}</p>
+            <p className="text-xs text-muted-foreground mt-1">MTN MoMo • Airtel Money</p>
+            <Button onClick={copyNumber} variant="outline" size="sm" className="mt-4">
+              <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy number
+            </Button>
+          </div>
+          <ol className="text-sm text-muted-foreground space-y-2 list-decimal pl-5">
+            <li>Open your Mobile Money app or dial the USSD code.</li>
+            <li>Send <span className="font-semibold text-foreground">${selectedPlan?.price}</span> to <span className="font-semibold text-foreground">{PAYMENT_NUMBER}</span>.</li>
+            <li>Use your account email as the reference.</li>
+            <li>Send the confirmation SMS to us via WhatsApp on the same number — your VIP access will be activated within minutes.</li>
+          </ol>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSelectedPlan(null)}>Close</Button>
+            <Button asChild className="bg-gradient-primary text-primary-foreground">
+              <a href={`https://wa.me/${PAYMENT_NUMBER_RAW.replace("+", "")}?text=${encodeURIComponent(`Hi, I just paid for the ${selectedPlan?.name} plan ($${selectedPlan?.price}). Here is my confirmation:`)}`} target="_blank" rel="noreferrer">
+                Open WhatsApp
+              </a>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
