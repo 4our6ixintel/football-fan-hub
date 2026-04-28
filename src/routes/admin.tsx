@@ -508,6 +508,186 @@ function AdminDashboardInner() {
         </TabsContent>
 
         <TabsContent value="users" className="mt-6">
+
+        </TabsContent>
+
+        <TabsContent value="vip" className="mt-6 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Crown className="h-4 w-4 text-vip" /> Add VIP Pick</CardTitle>
+              <CardDescription>Subscriber-only pick. Set the result later to update ROI on the dashboard.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={addVipPick} className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="vLeague">League</Label>
+                  <Input id="vLeague" value={vLeague} onChange={(e) => setVLeague(e.target.value)} placeholder="Premier League" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="vMatch">Match</Label>
+                  <Input id="vMatch" value={vMatch} onChange={(e) => setVMatch(e.target.value)} placeholder="Arsenal vs Chelsea" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="vPick">Pick</Label>
+                  <Input id="vPick" value={vPick} onChange={(e) => setVPick(e.target.value)} placeholder="BTTS — Yes" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="vKickoff">Kickoff</Label>
+                  <Input id="vKickoff" type="datetime-local" value={vKickoff} onChange={(e) => setVKickoff(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="vOdds">Odds</Label>
+                  <Input id="vOdds" type="number" step="0.01" min="1" value={vOdds} onChange={(e) => setVOdds(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="vStake">Stake (units)</Label>
+                  <Input id="vStake" type="number" step="0.5" min="0.5" value={vStake} onChange={(e) => setVStake(e.target.value)} />
+                </div>
+                <div className="md:col-span-2">
+                  <Button type="submit" className="bg-gradient-primary text-primary-foreground">
+                    <Plus className="h-4 w-4 mr-1" /> Publish VIP Pick
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Manage VIP Picks</CardTitle></CardHeader>
+            <CardContent className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Match</TableHead>
+                    <TableHead>Pick</TableHead>
+                    <TableHead>Odds</TableHead>
+                    <TableHead>Stake</TableHead>
+                    <TableHead>Kickoff</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {vipPicks.map((p) => (
+                    <TableRow key={p.id}>
+                      <TableCell className="font-medium">
+                        <div>{p.match}</div>
+                        <div className="text-xs text-muted-foreground">{p.league}</div>
+                      </TableCell>
+                      <TableCell>{p.pick}</TableCell>
+                      <TableCell>{Number(p.odds).toFixed(2)}</TableCell>
+                      <TableCell>{Number(p.stake_units).toFixed(2)}u</TableCell>
+                      <TableCell className="text-muted-foreground text-xs">{new Date(p.kickoff).toLocaleString()}</TableCell>
+                      <TableCell>
+                        <Select value={p.status} onValueChange={(v) => setVipPickStatus(p.id, v as VipPickRow["status"])}>
+                          <SelectTrigger className="w-28"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="won">Won</SelectItem>
+                            <SelectItem value="lost">Lost</SelectItem>
+                            <SelectItem value="void">Void</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button size="icon" variant="ghost" onClick={() => deleteVipPick(p.id)} aria-label="Delete">
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Crown className="h-4 w-4 text-vip" /> Add Accumulator</CardTitle>
+              <CardDescription>Build a multi-leg slip. Total odds are calculated automatically.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={addVipAcca} className="space-y-4">
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="aTitle">Title</Label>
+                    <Input id="aTitle" value={aTitle} onChange={(e) => setATitle(e.target.value)} placeholder="Saturday Banker x4" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="aWhen">Scheduled for</Label>
+                    <Input id="aWhen" type="datetime-local" value={aWhen} onChange={(e) => setAWhen(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="aStake">Stake (units)</Label>
+                    <Input id="aStake" type="number" step="0.5" min="0.5" value={aStake} onChange={(e) => setAStake(e.target.value)} />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label>Legs</Label>
+                    <span className="text-sm text-muted-foreground">Total odds: <span className="font-bold text-primary">{totalAccaOdds.toFixed(2)}</span></span>
+                  </div>
+                  {aLegs.map((leg, i) => (
+                    <div key={i} className="grid md:grid-cols-[1fr_1fr_120px_40px] gap-2 items-center">
+                      <Input placeholder="Match" value={leg.match} onChange={(e) => updateLeg(i, "match", e.target.value)} />
+                      <Input placeholder="Pick (e.g. Over 2.5)" value={leg.pick} onChange={(e) => updateLeg(i, "pick", e.target.value)} />
+                      <Input type="number" step="0.01" min="1" placeholder="Odds" value={leg.odds} onChange={(e) => updateLeg(i, "odds", e.target.value)} />
+                      <Button type="button" size="icon" variant="ghost" onClick={() => removeLeg(i)} disabled={aLegs.length === 1} aria-label="Remove leg">
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button type="button" variant="outline" size="sm" onClick={addLeg}>
+                    <Plus className="h-4 w-4 mr-1" /> Add Leg
+                  </Button>
+                </div>
+
+                <Button type="submit" className="bg-gradient-primary text-primary-foreground">
+                  <Plus className="h-4 w-4 mr-1" /> Publish Accumulator
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Manage Accumulators</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              {vipAccas.length === 0 && <p className="text-sm text-muted-foreground">No accumulators yet.</p>}
+              {vipAccas.map((a) => (
+                <div key={a.id} className="rounded-lg border border-border/50 p-4">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div>
+                      <div className="font-bold">{a.title}</div>
+                      <div className="text-xs text-muted-foreground mt-1">{new Date(a.scheduled_for).toLocaleString()} • {a.legs.length} legs • @ {Number(a.total_odds).toFixed(2)}</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Select value={a.status} onValueChange={(v) => setAccaStatus(a.id, v as VipAccaRow["status"])}>
+                        <SelectTrigger className="w-28"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="won">Won</SelectItem>
+                          <SelectItem value="lost">Lost</SelectItem>
+                          <SelectItem value="void">Void</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button size="icon" variant="ghost" onClick={() => deleteAcca(a.id)} aria-label="Delete">
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </div>
+                  <ul className="mt-2 text-xs text-muted-foreground space-y-1">
+                    {a.legs.map((leg, i) => (
+                      <li key={i}>• {leg.match} — {leg.pick} <span className="text-primary font-semibold">@ {Number(leg.odds).toFixed(2)}</span></li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="users-original-marker" className="hidden">
           <Card>
             <CardHeader>
               <CardTitle>Users</CardTitle>
