@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      news_posts: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          excerpt: string
+          id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by?: string | null
+          excerpt: string
+          id?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          excerpt?: string
+          id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      predictions: {
+        Row: {
+          confidence: number
+          created_at: string
+          created_by: string | null
+          id: string
+          kickoff: string
+          league: string
+          match: string
+          pick: string
+          updated_at: string
+        }
+        Insert: {
+          confidence?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kickoff: string
+          league: string
+          match: string
+          pick: string
+          updated_at?: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kickoff?: string
+          league?: string
+          match?: string
+          pick?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
