@@ -507,10 +507,6 @@ function AdminDashboardInner() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="users" className="mt-6">
-
-        </TabsContent>
-
         <TabsContent value="vip" className="mt-6 space-y-6">
           <Card>
             <CardHeader>
@@ -687,7 +683,7 @@ function AdminDashboardInner() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="users-original-marker" className="hidden">
+        <TabsContent value="users" className="mt-6">
           <Card>
             <CardHeader>
               <CardTitle>Users</CardTitle>
